@@ -28,6 +28,8 @@ class NeoVoltNumberEntityDescription(NumberEntityDescription):
     coordinator_key: str
     write_scale: float = 1.0
     register_count: int = 1  # 1 for 16-bit, 2 for 32-bit writes
+    read_scale: float = 1.0  # scale factor to convert raw register → display value
+    read_dtype: str = "u16"  # data type for readback decoding
 
 
 NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
@@ -43,6 +45,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         mode=NumberMode.SLIDER,
         register_address=2128,
+        read_scale=1,
+        read_dtype="u16",
     ),
     NeoVoltNumberEntityDescription(
         key="max_feed_to_grid_control",
@@ -55,6 +59,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         mode=NumberMode.SLIDER,
         register_address=2048,
+        read_scale=1,
+        read_dtype="u16",
     ),
     # ── Charge Cut SOC ──
     NeoVoltNumberEntityDescription(
@@ -69,6 +75,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.SLIDER,
         register_address=2133,
         write_scale=10,  # register scale 0.1 → 50% writes 500
+        read_scale=0.1,
+        read_dtype="u16",
     ),
     # ── Discharge time slots ──
     NeoVoltNumberEntityDescription(
@@ -173,6 +181,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         register_address=2177,
         register_count=2,
+        read_scale=1,
+        read_dtype="s32",
     ),
     NeoVoltNumberEntityDescription(
         key="dispatch_reactive_power_control",
@@ -186,6 +196,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         register_address=2179,
         register_count=2,
+        read_scale=1,
+        read_dtype="s32",
     ),
     NeoVoltNumberEntityDescription(
         key="dispatch_soc_control",
@@ -199,6 +211,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.SLIDER,
         register_address=2182,
         write_scale=2.5,  # register scale 0.4 → 50% writes 125
+        read_scale=0.4,
+        read_dtype="u16",
     ),
     NeoVoltNumberEntityDescription(
         key="dispatch_time_control",
@@ -212,6 +226,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         register_address=2183,
         register_count=2,
+        read_scale=1,
+        read_dtype="u32",
     ),
 )
 
@@ -263,7 +279,7 @@ class NeoVoltNumber(CoordinatorEntity[NeoVoltCoordinator], NumberEntity):
         return None
 
     async def async_set_native_value(self, value: float) -> None:
-        """Write the value to Modbus register(s)."""
+        """Write the value to Modbus register(s) and immediately read back."""
         raw = int(value * self.entity_description.write_scale)
         desc = self.entity_description
 
@@ -273,12 +289,20 @@ class NeoVoltNumber(CoordinatorEntity[NeoVoltCoordinator], NumberEntity):
                 raw = raw + 0x100000000  # convert to unsigned 32-bit
             high = (raw >> 16) & 0xFFFF
             low = raw & 0xFFFF
-            await self.coordinator.async_write_registers(
-                desc.register_address, [high, low]
+            await self.coordinator.async_write_and_readback_32(
+                desc.register_address,
+                [high, low],
+                desc.coordinator_key,
+                desc.read_scale,
+                desc.read_dtype,
             )
         else:
-            await self.coordinator.async_write_register(
-                desc.register_address, raw
+            await self.coordinator.async_write_and_readback(
+                desc.register_address,
+                raw,
+                desc.coordinator_key,
+                desc.read_scale,
+                desc.read_dtype,
             )
 
-        await self.coordinator.async_request_refresh()
+        self.async_write_ha_state()
