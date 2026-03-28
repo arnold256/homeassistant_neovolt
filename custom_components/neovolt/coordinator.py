@@ -134,9 +134,12 @@ REGISTER_DEFS: list[tuple[str, int, str, float]] = [
     ("charge_start_time_2", 2136, "u16", 1),                      # 0x0858 hr
     ("charge_stop_time_2", 2137, "u16", 1),                       # 0x0859 hr
     # ── Dispatch (block 9: start=2176, count=9) ──
+    # NOTE: Active/Reactive power use OFFSET 32000, NOT signed encoding.
+    # Raw 32000 = 0W, <32000 = charge, >32000 = discharge.
+    # We store the offset-adjusted value (charge=negative, discharge=positive).
     ("dispatch_start", 2176, "u16", 1),                           # 0x0880 lookup
-    ("dispatch_active_power", 2177, "s32", 1),                    # 0x0881 W
-    ("dispatch_reactive_power", 2179, "s32", 1),                  # 0x0883 var
+    ("dispatch_active_power_raw", 2177, "u32", 1),                # 0x0881 raw (offset 32000)
+    ("dispatch_reactive_power_raw", 2179, "u32", 1),              # 0x0883 raw (offset 32000)
     ("dispatch_mode", 2181, "u16", 1),                            # 0x0885 lookup
     ("dispatch_soc", 2182, "u16", 0.4),                           # 0x0886 %
     ("dispatch_time", 2183, "u32", 1),                            # 0x0887 s
@@ -286,6 +289,20 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
             raw = self._extract(block_regs, offset, dtype)
             data[key] = round(raw * scale, 2)
 
+        # Post-process: convert dispatch power from offset-32000 to signed W
+        # Raw 32000 = 0W, <32000 = charge (negative), >32000 = discharge (positive)
+        raw_active = data.get("dispatch_active_power_raw")
+        if raw_active is not None:
+            data["dispatch_active_power"] = int(raw_active) - 32000
+        else:
+            data["dispatch_active_power"] = None
+
+        raw_reactive = data.get("dispatch_reactive_power_raw")
+        if raw_reactive is not None:
+            data["dispatch_reactive_power"] = int(raw_reactive) - 32000
+        else:
+            data["dispatch_reactive_power"] = None
+
         return data
 
     async def async_write_register(self, address: int, value: int) -> bool:
@@ -363,6 +380,81 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
                 address, values, self.data[key],
             )
         return True
+
+    async def async_dispatch_start(
+        self,
+        active_power_w: int,
+        duration_s: int,
+        mode: int = 2,
+        soc_limit: int = 0,
+        reactive_power_var: int = 0,
+    ) -> bool:
+        """Start dispatch with the correct register write sequence.
+
+        The inverter requires registers written in a specific order,
+        with Dispatch Mode (0x0885) written LAST.
+
+        Args:
+            active_power_w: Watts, negative=charge, positive=discharge.
+            duration_s: Duration in seconds.
+            mode: Dispatch mode (0=Normal, 1=Charge, 2=Discharge).
+            soc_limit: Target SOC (raw value = SOC% / 0.4).
+            reactive_power_var: Reactive power in var (usually 0).
+        """
+        # Convert signed watts to offset-32000 encoding
+        active_raw = 32000 + active_power_w
+        reactive_raw = 32000 + reactive_power_var
+
+        # Split 32-bit values into high/low register pairs
+        active_high = (active_raw >> 16) & 0xFFFF
+        active_low = active_raw & 0xFFFF
+        reactive_high = (reactive_raw >> 16) & 0xFFFF
+        reactive_low = reactive_raw & 0xFFFF
+        duration_high = (duration_s >> 16) & 0xFFFF
+        duration_low = duration_s & 0xFFFF
+
+        _LOGGER.info(
+            "Dispatch start: %dW, %ds, mode=%d, soc=%d, reactive=%dvar",
+            active_power_w, duration_s, mode, soc_limit, reactive_power_var,
+        )
+
+        # Write sequence — Dispatch Mode MUST be last
+        # 1. Active Power (0x0881)
+        ok = await self.async_write_registers(2177, [active_high, active_low])
+        if not ok:
+            return False
+        # 2. Reactive Power (0x0883)
+        ok = await self.async_write_registers(2179, [reactive_high, reactive_low])
+        if not ok:
+            return False
+        # 3. SOC limit (0x0886)
+        ok = await self.async_write_register(2182, soc_limit)
+        if not ok:
+            return False
+        # 4. Duration (0x0887)
+        ok = await self.async_write_registers(2183, [duration_high, duration_low])
+        if not ok:
+            return False
+        # 5. Dispatch Start = 1 (0x0880)
+        ok = await self.async_write_register(2176, 1)
+        if not ok:
+            return False
+        # 6. Dispatch Mode — MUST BE LAST (0x0885)
+        ok = await self.async_write_register(2181, mode)
+        if not ok:
+            return False
+
+        # Read back all dispatch registers to confirm
+        await self.async_request_refresh()
+        return True
+
+    async def async_dispatch_stop(self) -> bool:
+        """Stop dispatch by writing 0 to Dispatch Start (0x0880)."""
+        _LOGGER.info("Dispatch stop")
+        ok = await self.async_write_register(2176, 0)
+        if ok:
+            await self.async_request_refresh()
+        return ok
 
     async def async_shutdown(self) -> None:
         """Close the Modbus connection."""

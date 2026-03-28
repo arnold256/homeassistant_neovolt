@@ -444,6 +444,16 @@
         "name": "Dispatch Mode",
         "description": "Operating mode for dispatch: Normal (automatic), Charge (force charge from grid), or Discharge (force discharge to home/grid)."
       }
+    },
+    "button": {
+      "dispatch_start_button": {
+        "name": "Start Dispatch",
+        "description": "Start a dispatch operation using the currently configured dispatch parameters (power, duration, mode, SOC limit). Writes all registers in the required sequence with Dispatch Mode written last, as required by the inverter."
+      },
+      "dispatch_stop_button": {
+        "name": "Stop Dispatch",
+        "description": "Stop the active dispatch operation. The inverter returns to normal automatic mode."
+      }
     }
   }
 }

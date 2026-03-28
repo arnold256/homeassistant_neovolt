@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from .const import CONF_SCAN_INTERVAL, CONF_SLAVE_ID, DEFAULT_SCAN_INTERVAL, DOMAIN
 from .coordinator import NeoVoltCoordinator
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.NUMBER, Platform.SELECT]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.NUMBER, Platform.SELECT, Platform.BUTTON]
 
 type NeoVoltConfigEntry = ConfigEntry[NeoVoltCoordinator]
 

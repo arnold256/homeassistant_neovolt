@@ -30,6 +30,7 @@ class NeoVoltNumberEntityDescription(NumberEntityDescription):
     register_count: int = 1  # 1 for 16-bit, 2 for 32-bit writes
     read_scale: float = 1.0  # scale factor to convert raw register → display value
     read_dtype: str = "u16"  # data type for readback decoding
+    is_offset_32000: bool = False  # dispatch power uses offset encoding
 
 
 NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
@@ -169,6 +170,9 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         register_address=2137,
     ),
     # ── Dispatch controls ──
+    # Active/Reactive power use offset-32000 encoding in the register.
+    # UI shows signed watts (negative=charge, positive=discharge).
+    # Write: register = 32000 + user_value. Read: user_value = register - 32000.
     NeoVoltNumberEntityDescription(
         key="dispatch_active_power_control",
         coordinator_key="dispatch_active_power",
@@ -182,7 +186,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         register_address=2177,
         register_count=2,
         read_scale=1,
-        read_dtype="s32",
+        read_dtype="u32",  # unsigned with offset, not signed
+        is_offset_32000=True,
     ),
     NeoVoltNumberEntityDescription(
         key="dispatch_reactive_power_control",
@@ -197,7 +202,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         register_address=2179,
         register_count=2,
         read_scale=1,
-        read_dtype="s32",
+        read_dtype="u32",  # unsigned with offset, not signed
+        is_offset_32000=True,
     ),
     NeoVoltNumberEntityDescription(
         key="dispatch_soc_control",
@@ -283,10 +289,23 @@ class NeoVoltNumber(CoordinatorEntity[NeoVoltCoordinator], NumberEntity):
         raw = int(value * self.entity_description.write_scale)
         desc = self.entity_description
 
-        if desc.register_count == 2:
-            # 32-bit write: split into high and low 16-bit words
-            if raw < 0:
-                raw = raw + 0x100000000  # convert to unsigned 32-bit
+        if desc.is_offset_32000:
+            # Dispatch power: user value is signed watts, register uses offset 32000
+            # -2000W (charge) → register 30000, +2000W (discharge) → register 34000
+            register_val = 32000 + raw
+            high = (register_val >> 16) & 0xFFFF
+            low = register_val & 0xFFFF
+            await self.coordinator.async_write_and_readback_32(
+                desc.register_address,
+                [high, low],
+                desc.coordinator_key,
+                desc.read_scale,
+                desc.read_dtype,
+            )
+            # Override coordinator data with the offset-adjusted display value
+            self.coordinator.data[desc.coordinator_key] = raw
+        elif desc.register_count == 2:
+            # 32-bit write (unsigned, e.g. dispatch_time)
             high = (raw >> 16) & 0xFFFF
             low = raw & 0xFFFF
             await self.coordinator.async_write_and_readback_32(

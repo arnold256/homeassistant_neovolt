@@ -708,13 +708,13 @@ SENSOR_DESCRIPTIONS: tuple[NeoVoltSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
     ),
     # ── Dispatch read-back ──
+    # These show the offset-adjusted values (negative=charge, positive=discharge)
     NeoVoltSensorEntityDescription(
         key="dispatch_active_power",
         coordinator_key="dispatch_active_power",
         translation_key="dispatch_active_power_sensor",
         native_unit_of_measurement=UnitOfPower.WATT,
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:flash",
         entity_registry_enabled_default=False,
     ),
     NeoVoltSensorEntityDescription(
@@ -723,7 +723,6 @@ SENSOR_DESCRIPTIONS: tuple[NeoVoltSensorEntityDescription, ...] = (
         translation_key="dispatch_reactive_power_sensor",
         native_unit_of_measurement="var",
         icon="mdi:sine-wave",
-        state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=False,
     ),
     NeoVoltSensorEntityDescription(
