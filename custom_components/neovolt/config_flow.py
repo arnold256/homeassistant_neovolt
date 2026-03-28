@@ -11,7 +11,14 @@ from pymodbus.client import AsyncModbusTcpClient
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_PORT
 
-from .const import CONF_SLAVE_ID, DEFAULT_PORT, DEFAULT_SLAVE_ID, DOMAIN
+from .const import (
+    CONF_SCAN_INTERVAL,
+    CONF_SLAVE_ID,
+    DEFAULT_PORT,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SLAVE_ID,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,8 +43,8 @@ class NeoVoltConfigFlow(ConfigFlow, domain=DOMAIN):
             self._async_abort_entries_match({CONF_HOST: host})
 
             # Test connection
+            client = AsyncModbusTcpClient(host=host, port=port, timeout=5)
             try:
-                client = AsyncModbusTcpClient(host=host, port=port, timeout=5)
                 await client.connect()
                 if not client.connected:
                     errors["base"] = "cannot_connect"
@@ -45,12 +52,13 @@ class NeoVoltConfigFlow(ConfigFlow, domain=DOMAIN):
                     result = await client.read_holding_registers(
                         address=258, count=1, slave=slave_id
                     )
-                    client.close()
                     if result.isError():
                         errors["base"] = "cannot_connect"
             except Exception:
                 _LOGGER.exception("Error connecting to NeoVolt device")
                 errors["base"] = "cannot_connect"
+            finally:
+                client.close()
 
             if not errors:
                 return self.async_create_entry(
@@ -59,6 +67,7 @@ class NeoVoltConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_HOST: host,
                         CONF_PORT: port,
                         CONF_SLAVE_ID: slave_id,
+                        CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
                     },
                 )
 
@@ -69,6 +78,9 @@ class NeoVoltConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_HOST): str,
                     vol.Required(CONF_PORT, default=DEFAULT_PORT): int,
                     vol.Required(CONF_SLAVE_ID, default=DEFAULT_SLAVE_ID): int,
+                    vol.Required(
+                        CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL
+                    ): vol.All(int, vol.Range(min=5, max=300)),
                 }
             ),
             errors=errors,

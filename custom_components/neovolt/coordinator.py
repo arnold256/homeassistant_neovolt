@@ -25,13 +25,14 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | None]]):
         host: str,
         port: int,
         slave_id: int,
+        scan_interval: int = DEFAULT_SCAN_INTERVAL,
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
             hass,
             _LOGGER,
             name=f"NeoVolt ({host})",
-            update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
+            update_interval=timedelta(seconds=scan_interval),
         )
         self.host = host
         self.port = port
@@ -144,6 +145,10 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | None]]):
             # CT rates
             ("gridmeter_ct_rate", 1, "uint16", 1),
             ("pvmeter_ct_rate", 129, "uint16", 1),
+            # Grid voltages
+            ("grid_voltage_phase_a", 20, "uint16", 1),
+            ("grid_voltage_phase_b", 21, "uint16", 1),
+            ("grid_voltage_phase_c", 22, "uint16", 1),
         ]
 
         registers_32: list[tuple[str, int, str, float]] = [
@@ -181,10 +186,6 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | None]]):
             ("inverter_extended_fault_1", 1099, "uint32", 1),
             ("inverter_extended_fault_2", 1101, "uint32", 1),
             ("system_fault", 1793, "uint32", 1),
-            # Grid voltages
-            ("grid_voltage_phase_a", 20, "uint16", 1),
-            ("grid_voltage_phase_b", 21, "uint16", 1),
-            ("grid_voltage_phase_c", 22, "uint16", 1),
         ]
 
         # Read 16-bit registers (1 register each)
@@ -199,25 +200,17 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | None]]):
             else:
                 data[key] = None
 
-        # Read 32-bit registers (2 registers each) -- except grid voltages which are 16-bit
+        # Read 32-bit registers (2 registers each)
         for key, address, dtype, scale in registers_32:
-            if dtype in ("uint16", "int16"):
-                regs = await self._read_register(client, address, count=1)
-                if regs is not None:
-                    raw = self._decode_uint16(regs) if dtype == "uint16" else self._decode_int16(regs)
-                    data[key] = round(raw * scale, 2)
+            regs = await self._read_register(client, address, count=2)
+            if regs is not None:
+                if dtype == "int32":
+                    raw = self._decode_int32(regs)
                 else:
-                    data[key] = None
+                    raw = self._decode_uint32(regs)
+                data[key] = round(raw * scale, 2)
             else:
-                regs = await self._read_register(client, address, count=2)
-                if regs is not None:
-                    if dtype == "int32":
-                        raw = self._decode_int32(regs)
-                    else:
-                        raw = self._decode_uint32(regs)
-                    data[key] = round(raw * scale, 2)
-                else:
-                    data[key] = None
+                data[key] = None
 
         return data
 
@@ -234,7 +227,7 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | None]]):
                 _LOGGER.error("Error writing register %s: %s", address, result)
                 return False
             return True
-        except (ModbusException, Exception) as err:
+        except Exception as err:
             _LOGGER.error("Exception writing register %s: %s", address, err)
             return False
 

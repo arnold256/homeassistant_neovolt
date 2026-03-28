@@ -41,7 +41,8 @@ Or click the button at the top of this page to add the repository directly.
 2. Click **Add Integration** and search for **NeoVolt**
 3. Enter the **IP address** of your AlphaESS inverter
 4. Port defaults to `502` and Slave ID to `85` (change only if your system differs)
-5. Click **Submit** -- the integration will verify the connection
+5. Set the **Poll Rate** in seconds (default: 10, range: 5-300)
+6. Click **Submit** -- the integration will verify the connection
 
 To add another device, simply repeat the steps above with a different IP address.
 

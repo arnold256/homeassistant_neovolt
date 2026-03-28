@@ -7,12 +7,14 @@
         "data": {
           "host": "IP Address",
           "port": "Modbus TCP Port",
-          "slave_id": "Slave ID"
+          "slave_id": "Slave ID",
+          "scan_interval": "Poll Rate (seconds)"
         },
         "data_description": {
           "host": "The IP address of your AlphaESS inverter on your local network.",
           "port": "The Modbus TCP port (default: 502).",
-          "slave_id": "The Modbus slave ID of your inverter (default: 85)."
+          "slave_id": "The Modbus slave ID of your inverter (default: 85).",
+          "scan_interval": "How often to poll the inverter for new data, in seconds (5-300, default: 10)."
         }
       }
     },

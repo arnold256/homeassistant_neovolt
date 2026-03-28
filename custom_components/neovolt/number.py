@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from homeassistant.components.number import (
-    NumberDeviceClass,
     NumberEntity,
     NumberEntityDescription,
     NumberMode,
