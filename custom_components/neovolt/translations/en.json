@@ -25,5 +25,425 @@
     "abort": {
       "already_configured": "This device is already configured."
     }
+  },
+  "entity": {
+    "sensor": {
+      "total_power_grid": {
+        "name": "Total Power Grid",
+        "description": "Total active power at the grid connection point. Positive means consuming from grid, negative means feeding to grid."
+      },
+      "grid_power_phase_a": {
+        "name": "Grid Power Phase A",
+        "description": "Active power on grid phase A. Positive = consuming, negative = feeding."
+      },
+      "grid_power_phase_b": {
+        "name": "Grid Power Phase B",
+        "description": "Active power on grid phase B. Positive = consuming, negative = feeding."
+      },
+      "grid_power_phase_c": {
+        "name": "Grid Power Phase C",
+        "description": "Active power on grid phase C. Positive = consuming, negative = feeding."
+      },
+      "grid_voltage_phase_a": {
+        "name": "Grid Voltage Phase A",
+        "description": "AC voltage measured at the grid meter on phase A."
+      },
+      "grid_voltage_phase_b": {
+        "name": "Grid Voltage Phase B",
+        "description": "AC voltage measured at the grid meter on phase B."
+      },
+      "grid_voltage_phase_c": {
+        "name": "Grid Voltage Phase C",
+        "description": "AC voltage measured at the grid meter on phase C."
+      },
+      "grid_current_phase_a": {
+        "name": "Grid Current Phase A",
+        "description": "AC current flowing through the grid meter on phase A."
+      },
+      "grid_current_phase_b": {
+        "name": "Grid Current Phase B",
+        "description": "AC current flowing through the grid meter on phase B."
+      },
+      "grid_current_phase_c": {
+        "name": "Grid Current Phase C",
+        "description": "AC current flowing through the grid meter on phase C."
+      },
+      "grid_frequency_meter": {
+        "name": "Grid Frequency (Meter)",
+        "description": "AC frequency measured at the grid meter."
+      },
+      "total_power_pvmeter": {
+        "name": "Total Power PV Meter",
+        "description": "Total active power measured at the PV meter."
+      },
+      "total_power_inverter": {
+        "name": "Total Power Inverter",
+        "description": "Total AC output power of the inverter across all phases."
+      },
+      "power_inverter_l1": {
+        "name": "Power Inverter L1",
+        "description": "AC output power of the inverter on phase L1."
+      },
+      "power_inverter_l2": {
+        "name": "Power Inverter L2",
+        "description": "AC output power of the inverter on phase L2."
+      },
+      "power_inverter_l3": {
+        "name": "Power Inverter L3",
+        "description": "AC output power of the inverter on phase L3."
+      },
+      "inverter_voltage_l1": {
+        "name": "Inverter Voltage L1",
+        "description": "AC output voltage of the inverter on phase L1."
+      },
+      "inverter_voltage_l2": {
+        "name": "Inverter Voltage L2",
+        "description": "AC output voltage of the inverter on phase L2."
+      },
+      "inverter_voltage_l3": {
+        "name": "Inverter Voltage L3",
+        "description": "AC output voltage of the inverter on phase L3."
+      },
+      "inverter_current_l1": {
+        "name": "Inverter Current L1",
+        "description": "AC output current of the inverter on phase L1."
+      },
+      "inverter_current_l2": {
+        "name": "Inverter Current L2",
+        "description": "AC output current of the inverter on phase L2."
+      },
+      "inverter_current_l3": {
+        "name": "Inverter Current L3",
+        "description": "AC output current of the inverter on phase L3."
+      },
+      "inverter_temperature": {
+        "name": "Inverter Temperature",
+        "description": "Internal temperature of the inverter."
+      },
+      "grid_frequency": {
+        "name": "Grid Frequency",
+        "description": "AC grid frequency measured at the inverter output."
+      },
+      "inverter_mode": {
+        "name": "Inverter Mode",
+        "description": "Current operating mode: Wait, Online, UPS, Bypass, Fault, DC, Check, Self Test, or Update."
+      },
+      "power_inverter_backup_total": {
+        "name": "Power Inverter Backup Total",
+        "description": "Total backup (UPS) output power across all phases."
+      },
+      "power_inverter_backup_l1": {
+        "name": "Power Inverter Backup L1",
+        "description": "Backup (UPS) output power on phase L1."
+      },
+      "power_inverter_backup_l2": {
+        "name": "Power Inverter Backup L2",
+        "description": "Backup (UPS) output power on phase L2."
+      },
+      "power_inverter_backup_l3": {
+        "name": "Power Inverter Backup L3",
+        "description": "Backup (UPS) output power on phase L3."
+      },
+      "power_string_1": {
+        "name": "Power PV String 1",
+        "description": "DC power output from PV string 1 (connector PV1 on inverter)."
+      },
+      "power_string_2": {
+        "name": "Power PV String 2",
+        "description": "DC power output from PV string 2 (connector PV3 on inverter)."
+      },
+      "power_string_3": {
+        "name": "Power PV String 3",
+        "description": "DC power output from PV string 3 (connector PV2 on inverter)."
+      },
+      "power_string_4": {
+        "name": "Power PV String 4",
+        "description": "DC power output from PV string 4 (connector PV4 on inverter)."
+      },
+      "pv1_voltage": {
+        "name": "PV1 Voltage",
+        "description": "DC voltage of PV string 1."
+      },
+      "pv1_current": {
+        "name": "PV1 Current",
+        "description": "DC current of PV string 1."
+      },
+      "pv2_voltage": {
+        "name": "PV2 Voltage",
+        "description": "DC voltage of PV string 2."
+      },
+      "pv2_current": {
+        "name": "PV2 Current",
+        "description": "DC current of PV string 2."
+      },
+      "pv3_voltage": {
+        "name": "PV3 Voltage",
+        "description": "DC voltage of PV string 3."
+      },
+      "pv3_current": {
+        "name": "PV3 Current",
+        "description": "DC current of PV string 3."
+      },
+      "pv4_voltage": {
+        "name": "PV4 Voltage",
+        "description": "DC voltage of PV string 4."
+      },
+      "pv4_current": {
+        "name": "PV4 Current",
+        "description": "DC current of PV string 4."
+      },
+      "energy_feed_to_grid": {
+        "name": "Total Energy Feed to Grid",
+        "description": "Cumulative energy exported to the grid, measured at the grid meter. Use for Energy Dashboard 'Return to Grid'."
+      },
+      "energy_consumption_from_grid": {
+        "name": "Total Energy Consumption from Grid",
+        "description": "Cumulative energy imported from the grid, measured at the grid meter. Use for Energy Dashboard 'Grid Consumption'."
+      },
+      "energy_feed_to_grid_pvmeter": {
+        "name": "Total Energy Feed to Grid (PV Meter)",
+        "description": "Cumulative energy exported to the grid, measured at the PV meter."
+      },
+      "energy_consumption_from_grid_pvmeter": {
+        "name": "Total Energy Consumption from Grid (PV Meter)",
+        "description": "Cumulative energy imported from the grid, measured at the PV meter."
+      },
+      "energy_charge_battery": {
+        "name": "Total Energy Charge Battery",
+        "description": "Cumulative energy charged into the battery. Use for Energy Dashboard 'Battery Charge'."
+      },
+      "energy_discharge_battery": {
+        "name": "Total Energy Discharge Battery",
+        "description": "Cumulative energy discharged from the battery. Use for Energy Dashboard 'Battery Discharge'."
+      },
+      "energy_charge_battery_from_grid": {
+        "name": "Total Energy Charge Battery from Grid",
+        "description": "Cumulative energy charged into the battery specifically from grid power."
+      },
+      "energy_from_pv": {
+        "name": "Total Energy from PV",
+        "description": "Cumulative energy generated by the inverter from PV panels. Use for Energy Dashboard 'Solar Production'."
+      },
+      "pv_inverter_energy": {
+        "name": "PV Inverter Energy",
+        "description": "Cumulative energy from a separate PV grid inverter (if installed)."
+      },
+      "system_total_pv_energy": {
+        "name": "System Total PV Energy",
+        "description": "Cumulative total PV energy across the entire system (hybrid + grid inverter)."
+      },
+      "battery_soc": {
+        "name": "Battery State of Charge",
+        "description": "Current battery charge level as a percentage."
+      },
+      "battery_soh": {
+        "name": "Battery State of Health",
+        "description": "Battery health indicator. 100% = new condition, decreases with age and cycles."
+      },
+      "battery_voltage": {
+        "name": "Battery Voltage",
+        "description": "DC voltage of the battery pack."
+      },
+      "battery_current": {
+        "name": "Battery Current",
+        "description": "DC current flowing to/from the battery. Positive = charging, negative = discharging."
+      },
+      "battery_power": {
+        "name": "Battery Power",
+        "description": "Power flowing to/from the battery. Positive = charging, negative = discharging."
+      },
+      "battery_min_cell_temp": {
+        "name": "Battery Min Cell Temperature",
+        "description": "Temperature of the coldest cell in the battery pack."
+      },
+      "battery_max_cell_temp": {
+        "name": "Battery Max Cell Temperature",
+        "description": "Temperature of the hottest cell in the battery pack."
+      },
+      "battery_max_charge_current": {
+        "name": "Battery Max Charge Current",
+        "description": "Maximum current the BMS allows for charging at this moment."
+      },
+      "battery_max_discharge_current": {
+        "name": "Battery Max Discharge Current",
+        "description": "Maximum current the BMS allows for discharging at this moment."
+      },
+      "battery_max_charge_power": {
+        "name": "Battery Max Charge Power",
+        "description": "Maximum power the BMS allows for charging at this moment."
+      },
+      "battery_max_discharge_power": {
+        "name": "Battery Max Discharge Power",
+        "description": "Maximum power the BMS allows for discharging at this moment."
+      },
+      "battery_capacity": {
+        "name": "Battery Capacity",
+        "description": "Rated capacity of the installed battery pack."
+      },
+      "battery_remaining_time": {
+        "name": "Battery Remaining Time",
+        "description": "Estimated minutes until the battery is fully charged or discharged at the current rate."
+      },
+      "battery_status": {
+        "name": "Battery Status",
+        "description": "Overall battery status: Normal, Warning, or Fault."
+      },
+      "battery_relay_status": {
+        "name": "Battery Relay Status",
+        "description": "State of battery charge/discharge relays: Disconnected, Discharge Only, Charge Only, or Normal (both connected)."
+      },
+      "battery_ups_soc": {
+        "name": "UPS SOC Reserve",
+        "description": "Current UPS reserve SOC setting. Battery will not discharge below this level in normal operation."
+      },
+      "max_feed_to_grid": {
+        "name": "Max Feed to Grid",
+        "description": "Current maximum feed-in rate to grid as a percentage of installed PV capacity."
+      },
+      "inverter_fault_1": {
+        "name": "Inverter Fault 1",
+        "description": "Primary inverter fault code. 0 = no fault."
+      },
+      "inverter_fault_2": {
+        "name": "Inverter Fault 2",
+        "description": "Secondary inverter fault code. 0 = no fault."
+      },
+      "inverter_warning_1": {
+        "name": "Inverter Warning 1",
+        "description": "Primary inverter warning code. 0 = no warning."
+      },
+      "inverter_warning_2": {
+        "name": "Inverter Warning 2",
+        "description": "Secondary inverter warning code. 0 = no warning."
+      },
+      "inverter_extended_fault_1": {
+        "name": "Inverter Extended Fault 1",
+        "description": "Extended inverter fault code 1. 0 = no fault."
+      },
+      "inverter_extended_fault_2": {
+        "name": "Inverter Extended Fault 2",
+        "description": "Extended inverter fault code 2. 0 = no fault."
+      },
+      "system_fault": {
+        "name": "System Fault",
+        "description": "System-level fault code from the EMS. 0 = no fault."
+      },
+      "ems_version_high": {
+        "name": "EMS Version High",
+        "description": "Major version number of the EMS firmware."
+      },
+      "ems_version_middle": {
+        "name": "EMS Version Middle",
+        "description": "Minor version number of the EMS firmware."
+      },
+      "ems_version_low": {
+        "name": "EMS Version Low",
+        "description": "Patch version number of the EMS firmware."
+      },
+      "gridmeter_ct_rate": {
+        "name": "Grid Meter CT Rate",
+        "description": "Current transformer ratio configured for the grid meter."
+      },
+      "pvmeter_ct_rate": {
+        "name": "PV Meter CT Rate",
+        "description": "Current transformer ratio configured for the PV meter."
+      },
+      "dispatch_active_power_sensor": {
+        "name": "Dispatch Active Power",
+        "description": "Current dispatch active power setting. Positive = discharge, negative = charge."
+      },
+      "dispatch_reactive_power_sensor": {
+        "name": "Dispatch Reactive Power",
+        "description": "Current dispatch reactive power setting in var."
+      },
+      "dispatch_soc_sensor": {
+        "name": "Dispatch SOC",
+        "description": "SOC limit configured for the current dispatch operation."
+      },
+      "dispatch_time_sensor": {
+        "name": "Dispatch Time",
+        "description": "Remaining duration of the current dispatch operation in seconds."
+      }
+    },
+    "number": {
+      "target_soc": {
+        "name": "Target SOC",
+        "description": "Minimum battery state of charge reserve. The battery will not discharge below this level in normal operation (UPS/backup reserve)."
+      },
+      "max_feed_to_grid_control": {
+        "name": "Max Feed to Grid Rate",
+        "description": "Maximum percentage of installed PV capacity that can be fed into the grid. Set to 0 to prevent all grid export."
+      },
+      "charge_cut_soc": {
+        "name": "Charge Cut SOC",
+        "description": "Stop charging the battery when SOC reaches this percentage during timed charging."
+      },
+      "discharge_start_time_1": {
+        "name": "Discharge Start Time 1",
+        "description": "Hour (0-23) when timed discharge period 1 begins."
+      },
+      "discharge_stop_time_1": {
+        "name": "Discharge Stop Time 1",
+        "description": "Hour (0-23) when timed discharge period 1 ends."
+      },
+      "discharge_start_time_2": {
+        "name": "Discharge Start Time 2",
+        "description": "Hour (0-23) when timed discharge period 2 begins."
+      },
+      "discharge_stop_time_2": {
+        "name": "Discharge Stop Time 2",
+        "description": "Hour (0-23) when timed discharge period 2 ends."
+      },
+      "charge_start_time_1": {
+        "name": "Charge Start Time 1",
+        "description": "Hour (0-23) when timed charge period 1 begins."
+      },
+      "charge_stop_time_1": {
+        "name": "Charge Stop Time 1",
+        "description": "Hour (0-23) when timed charge period 1 ends."
+      },
+      "charge_start_time_2": {
+        "name": "Charge Start Time 2",
+        "description": "Hour (0-23) when timed charge period 2 begins."
+      },
+      "charge_stop_time_2": {
+        "name": "Charge Stop Time 2",
+        "description": "Hour (0-23) when timed charge period 2 ends."
+      },
+      "dispatch_active_power": {
+        "name": "Dispatch Active Power",
+        "description": "Force battery to charge (negative watts) or discharge (positive watts) at a specific power level. Requires Dispatch Start = On."
+      },
+      "dispatch_reactive_power": {
+        "name": "Dispatch Reactive Power",
+        "description": "Set reactive power output in var during dispatch. Typically left at 0 for residential use."
+      },
+      "dispatch_soc": {
+        "name": "Dispatch SOC Limit",
+        "description": "SOC limit for the dispatch operation. Charging stops at this SOC, discharging stops above this SOC."
+      },
+      "dispatch_time": {
+        "name": "Dispatch Duration",
+        "description": "How long the dispatch command runs in seconds before reverting to normal operation. Max 86400 (24 hours)."
+      }
+    },
+    "select": {
+      "battery_mos_control": {
+        "name": "Battery MOS Control",
+        "description": "Control the battery MOSFET switches. 'Normal' allows both charge and discharge. 'Charge Only' or 'Discharge Only' restricts the battery to one direction. The 'Disconnected' option (value 0) is blocked for safety to prevent accidental battery isolation."
+      },
+      "time_period_control_flag": {
+        "name": "Time Period Control",
+        "description": "Enable or disable the timed charge/discharge schedule. When enabled, the battery charges and discharges according to the configured time periods."
+      },
+      "dispatch_start": {
+        "name": "Dispatch Start",
+        "description": "Start or stop a dispatch operation. Set to 'On' to begin forcing the battery to charge or discharge at the configured power level."
+      },
+      "dispatch_mode": {
+        "name": "Dispatch Mode",
+        "description": "Operating mode for dispatch: Normal (automatic), Charge (force charge from grid), or Discharge (force discharge to home/grid)."
+      }
+    }
   }
 }
