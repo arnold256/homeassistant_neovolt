@@ -327,6 +327,14 @@ SENSOR_DESCRIPTIONS: tuple[NeoVoltSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
     ),
     NeoVoltSensorEntityDescription(
+        key="battery_current",
+        coordinator_key="battery_current",
+        name="Battery Current",
+        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    NeoVoltSensorEntityDescription(
         key="battery_power",
         coordinator_key="battery_power",
         name="Battery Power",

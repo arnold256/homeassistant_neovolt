@@ -26,6 +26,7 @@ class NeoVoltNumberEntityDescription(NumberEntityDescription):
 
     register_address: int
     coordinator_key: str
+    write_scale: float = 1.0
 
 
 NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
@@ -40,6 +41,7 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         mode=NumberMode.SLIDER,
         register_address=2128,
+        write_scale=10,  # register uses scale 0.1, so 50% → write 500
     ),
     NeoVoltNumberEntityDescription(
         key="max_feed_to_grid",
@@ -52,6 +54,7 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         mode=NumberMode.SLIDER,
         register_address=2048,
+        write_scale=1,  # register uses scale 1, so 50% → write 50
     ),
 )
 
@@ -106,6 +109,6 @@ class NeoVoltNumber(CoordinatorEntity[NeoVoltCoordinator], NumberEntity):
         """Write the value to the Modbus register."""
         await self.coordinator.async_write_register(
             address=self.entity_description.register_address,
-            value=int(value),
+            value=int(value * self.entity_description.write_scale),
         )
         await self.coordinator.async_request_refresh()
