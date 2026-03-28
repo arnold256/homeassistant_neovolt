@@ -62,7 +62,6 @@ SELECT_DESCRIPTIONS: tuple[NeoVoltSelectEntityDescription, ...] = (
         options=list(DISPATCH_START_MAP.values()),
         options_map=DISPATCH_START_MAP,
         register_address=2176,
-        entity_registry_enabled_default=False,
     ),
     NeoVoltSelectEntityDescription(
         key="dispatch_mode",
@@ -72,7 +71,6 @@ SELECT_DESCRIPTIONS: tuple[NeoVoltSelectEntityDescription, ...] = (
         options=list(DISPATCH_MODE_MAP.values()),
         options_map=DISPATCH_MODE_MAP,
         register_address=2181,
-        entity_registry_enabled_default=False,
     ),
 )
 
