@@ -293,7 +293,7 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
         try:
             client = await self._ensure_connected()
             result = await client.write_register(
-                address, value=value, **self._slave_kwarg,
+                address, value, **self._slave_kwarg,
             )
             if result.isError():
                 _LOGGER.error("Error writing register %s: %s", address, result)
@@ -308,7 +308,7 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
         try:
             client = await self._ensure_connected()
             result = await client.write_registers(
-                address, values=values, **self._slave_kwarg,
+                address, values, **self._slave_kwarg,
             )
             if result.isError():
                 _LOGGER.error("Error writing registers %s: %s", address, result)

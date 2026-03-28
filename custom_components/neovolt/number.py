@@ -103,7 +103,6 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_step=1,
         mode=NumberMode.BOX,
         register_address=2131,
-        entity_registry_enabled_default=False,
     ),
     NeoVoltNumberEntityDescription(
         key="discharge_stop_time_2",
@@ -115,7 +114,6 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_step=1,
         mode=NumberMode.BOX,
         register_address=2132,
-        entity_registry_enabled_default=False,
     ),
     # ── Charge time slots ──
     NeoVoltNumberEntityDescription(
@@ -150,7 +148,6 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_step=1,
         mode=NumberMode.BOX,
         register_address=2136,
-        entity_registry_enabled_default=False,
     ),
     NeoVoltNumberEntityDescription(
         key="charge_stop_time_2",
@@ -162,7 +159,6 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_step=1,
         mode=NumberMode.BOX,
         register_address=2137,
-        entity_registry_enabled_default=False,
     ),
     # ── Dispatch controls ──
     NeoVoltNumberEntityDescription(
@@ -177,7 +173,6 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         register_address=2177,
         register_count=2,
-        entity_registry_enabled_default=False,
     ),
     NeoVoltNumberEntityDescription(
         key="dispatch_reactive_power_control",
@@ -191,7 +186,6 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         register_address=2179,
         register_count=2,
-        entity_registry_enabled_default=False,
     ),
     NeoVoltNumberEntityDescription(
         key="dispatch_soc_control",
@@ -205,7 +199,6 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.SLIDER,
         register_address=2182,
         write_scale=2.5,  # register scale 0.4 → 50% writes 125
-        entity_registry_enabled_default=False,
     ),
     NeoVoltNumberEntityDescription(
         key="dispatch_time_control",
@@ -219,7 +212,6 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
         register_address=2183,
         register_count=2,
-        entity_registry_enabled_default=False,
     ),
 )
 
