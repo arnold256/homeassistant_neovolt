@@ -709,6 +709,28 @@ SENSOR_DESCRIPTIONS: tuple[NeoVoltSensorEntityDescription, ...] = (
         icon="mdi:meter-electric-outline",
         entity_registry_enabled_default=False,
     ),
+    # ── Inverter Info ──
+    NeoVoltSensorEntityDescription(
+        key="inverter_master_version",
+        coordinator_key="inverter_master_version",
+        translation_key="inverter_master_version",
+        icon="mdi:chip",
+        entity_registry_enabled_default=False,
+    ),
+    NeoVoltSensorEntityDescription(
+        key="inverter_slave_version",
+        coordinator_key="inverter_slave_version",
+        translation_key="inverter_slave_version",
+        icon="mdi:chip",
+        entity_registry_enabled_default=False,
+    ),
+    NeoVoltSensorEntityDescription(
+        key="inverter_serial_number",
+        coordinator_key="inverter_serial_number",
+        translation_key="inverter_serial_number",
+        icon="mdi:identifier",
+        entity_registry_enabled_default=False,
+    ),
     # ── Dispatch read-back ──
     NeoVoltSensorEntityDescription(
         key="dispatch_active_power",

@@ -348,6 +348,18 @@
         "name": "PV Meter CT Rate",
         "description": "Current transformer ratio configured for the PV meter."
       },
+      "inverter_master_version": {
+        "name": "Inverter Master Version",
+        "description": "Firmware version of the inverter master controller."
+      },
+      "inverter_slave_version": {
+        "name": "Inverter Slave Version",
+        "description": "Firmware version of the inverter slave controller."
+      },
+      "inverter_serial_number": {
+        "name": "Inverter Serial Number",
+        "description": "Unique serial number of the inverter."
+      },
       "dispatch_active_power_sensor": {
         "name": "Dispatch Active Power",
         "description": "Current dispatch active power setting. Positive = discharge, negative = charge."
