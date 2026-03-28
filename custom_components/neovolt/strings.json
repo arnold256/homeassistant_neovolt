@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to NeoVolt (AlphaESS) System",
+        "description": "Enter the connection details for your AlphaESS inverter.",
+        "data": {
+          "host": "IP Address",
+          "port": "Modbus TCP Port",
+          "slave_id": "Slave ID"
+        },
+        "data_description": {
+          "host": "The IP address of your AlphaESS inverter on your local network.",
+          "port": "The Modbus TCP port (default: 502).",
+          "slave_id": "The Modbus slave ID of your inverter (default: 85)."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the inverter. Check IP address and port.",
+      "unknown": "Unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  }
+}
