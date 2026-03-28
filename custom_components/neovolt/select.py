@@ -126,11 +126,15 @@ class NeoVoltSelect(CoordinatorEntity[NeoVoltCoordinator], SelectEntity):
         return self._display_map.get(int(raw))
 
     async def async_select_option(self, option: str) -> None:
-        """Write the selected option to the Modbus register."""
+        """Write the selected option to the Modbus register and read back."""
         value = self._label_to_value.get(option)
         if value is None:
             return
-        await self.coordinator.async_write_register(
-            self.entity_description.register_address, value
+        await self.coordinator.async_write_and_readback(
+            self.entity_description.register_address,
+            value,
+            self.entity_description.coordinator_key,
+            scale=1,
+            dtype="u16",
         )
-        await self.coordinator.async_request_refresh()
+        self.async_write_ha_state()

@@ -318,6 +318,52 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
             _LOGGER.error("Exception writing registers %s: %s", address, err)
             return False
 
+    async def async_readback_register(
+        self, address: int, count: int = 1
+    ) -> list[int] | None:
+        """Read back register(s) immediately after a write to confirm the change."""
+        try:
+            client = await self._ensure_connected()
+        except Exception:
+            return None
+        return await self._read_block(client, address, count)
+
+    async def async_write_and_readback(
+        self, address: int, value: int, key: str, scale: float, dtype: str
+    ) -> bool:
+        """Write a 16-bit register, read it back, and update coordinator data."""
+        success = await self.async_write_register(address, value)
+        if not success:
+            return False
+
+        regs = await self.async_readback_register(address, count=1)
+        if regs is not None:
+            raw = self._extract(regs, 0, dtype)
+            self.data[key] = round(raw * scale, 2)
+            _LOGGER.debug(
+                "Readback register %s: wrote %s, read back %s",
+                address, value, self.data[key],
+            )
+        return True
+
+    async def async_write_and_readback_32(
+        self, address: int, values: list[int], key: str, scale: float, dtype: str
+    ) -> bool:
+        """Write a 32-bit register pair, read back, and update coordinator data."""
+        success = await self.async_write_registers(address, values)
+        if not success:
+            return False
+
+        regs = await self.async_readback_register(address, count=2)
+        if regs is not None:
+            raw = self._extract(regs, 0, dtype)
+            self.data[key] = round(raw * scale, 2)
+            _LOGGER.debug(
+                "Readback registers %s: wrote %s, read back %s",
+                address, values, self.data[key],
+            )
+        return True
+
     async def async_shutdown(self) -> None:
         """Close the Modbus connection."""
         if self._client and self._client.connected:
