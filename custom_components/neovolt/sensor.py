@@ -29,7 +29,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     BATTERY_RELAY_STATUS_MAP,
-    BATTERY_STATUS_MAP,
     DOMAIN,
     INVERTER_MODE_MAP,
 )
@@ -597,7 +596,6 @@ SENSOR_DESCRIPTIONS: tuple[NeoVoltSensorEntityDescription, ...] = (
         coordinator_key="battery_status",
         translation_key="battery_status",
         icon="mdi:battery-check-outline",
-        value_map=BATTERY_STATUS_MAP,
     ),
     NeoVoltSensorEntityDescription(
         key="battery_relay_status",
@@ -707,28 +705,6 @@ SENSOR_DESCRIPTIONS: tuple[NeoVoltSensorEntityDescription, ...] = (
         coordinator_key="pvmeter_ct_rate",
         translation_key="pvmeter_ct_rate",
         icon="mdi:meter-electric-outline",
-        entity_registry_enabled_default=False,
-    ),
-    # ── Inverter Info ──
-    NeoVoltSensorEntityDescription(
-        key="inverter_master_version",
-        coordinator_key="inverter_master_version",
-        translation_key="inverter_master_version",
-        icon="mdi:chip",
-        entity_registry_enabled_default=False,
-    ),
-    NeoVoltSensorEntityDescription(
-        key="inverter_slave_version",
-        coordinator_key="inverter_slave_version",
-        translation_key="inverter_slave_version",
-        icon="mdi:chip",
-        entity_registry_enabled_default=False,
-    ),
-    NeoVoltSensorEntityDescription(
-        key="inverter_serial_number",
-        coordinator_key="inverter_serial_number",
-        translation_key="inverter_serial_number",
-        icon="mdi:identifier",
         entity_registry_enabled_default=False,
     ),
     # ── Dispatch read-back ──

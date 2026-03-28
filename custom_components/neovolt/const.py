@@ -18,12 +18,6 @@ BATTERY_RELAY_STATUS_MAP: dict[int, str] = {
     3: "Normal",
 }
 
-BATTERY_STATUS_MAP: dict[int, str] = {
-    0: "Normal",
-    1: "Warning",
-    2: "Fault",
-}
-
 INVERTER_MODE_MAP: dict[int, str] = {
     0: "Wait",
     1: "Online",

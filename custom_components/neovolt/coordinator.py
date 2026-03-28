@@ -27,8 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 # Block 3:  Battery          start=256   count=47  (registers 256-302)
 # Block 4:  Inverter         start=1024  count=65  (registers 1024-1088)
 # Block 5:  Extended Faults  start=1099  count=4   (registers 1099-1102)
-# Block 6:  Inverter Info    start=1600  count=26  (registers 1600-1625, ASCII)
-# Block 7:  EMS Version      start=1867  count=3   (registers 1867-1869)
+# Block 6:  EMS Version      start=1867  count=3   (registers 1867-1869)
 # Block 8:  System Config    start=2048  count=1   (register 2048)
 # Block 9:  Timing           start=2127  count=11  (registers 2127-2137)
 # Block 10: Dispatch         start=2176  count=9   (registers 2176-2184)
@@ -147,14 +146,6 @@ REGISTER_DEFS: list[tuple[str, int, str, float]] = [
     ("system_fault", 2260, "u32", 1),                             # 0x08D4
 ]
 
-# String register definitions: (key, address, register_count)
-# These are ASCII strings packed into consecutive registers (2 bytes per register).
-STRING_REGISTER_DEFS: list[tuple[str, int, int]] = [
-    ("inverter_master_version", 1600, 5),   # 0x0640, 10 bytes ASCII
-    ("inverter_slave_version", 1605, 5),    # 0x0645, 10 bytes ASCII
-    ("inverter_serial_number", 1610, 16),   # 0x064A, 32 bytes ASCII
-]
-
 # Bulk-read blocks: (start_address, count)
 READ_BLOCKS: list[tuple[int, int]] = [
     (1, 34),       # Block 1:  Grid Meter
@@ -162,8 +153,7 @@ READ_BLOCKS: list[tuple[int, int]] = [
     (256, 47),     # Block 3:  Battery (extended to include register 302)
     (1024, 65),    # Block 4:  Inverter
     (1099, 4),     # Block 5:  Extended Faults
-    (1600, 26),    # Block 6:  Inverter Info (versions + serial, ASCII)
-    (1867, 3),     # Block 7:  EMS Version
+    (1867, 3),     # Block 6:  EMS Version
     (2048, 1),     # Block 8:  System Config
     (2127, 11),    # Block 9:  Timing
     (2176, 9),     # Block 10: Dispatch
@@ -264,20 +254,6 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
             return self._extract_u32(registers, offset)
         return self._extract_s32(registers, offset)
 
-    @staticmethod
-    def _extract_ascii(registers: list[int], offset: int, count: int) -> str:
-        """Extract an ASCII string from consecutive registers."""
-        chars = []
-        for i in range(count):
-            reg = registers[offset + i]
-            high = (reg >> 8) & 0xFF
-            low = reg & 0xFF
-            if high > 0:
-                chars.append(chr(high))
-            if low > 0:
-                chars.append(chr(low))
-        return "".join(chars).strip("\x00 ")
-
     async def _async_update_data(self) -> dict[str, float | int | str | None]:
         """Fetch all register data from the inverter."""
         try:
@@ -293,7 +269,6 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
 
         data: dict[str, float | int | str | None] = {}
 
-        # Numeric registers
         for key, address, dtype, scale in REGISTER_DEFS:
             block_regs = None
             block_start = 0
@@ -310,23 +285,6 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
             offset = address - block_start
             raw = self._extract(block_regs, offset, dtype)
             data[key] = round(raw * scale, 2)
-
-        # String registers (inverter info)
-        for key, address, reg_count in STRING_REGISTER_DEFS:
-            block_regs = None
-            block_start = 0
-            for start, count in READ_BLOCKS:
-                if start <= address < start + count:
-                    block_regs = blocks.get(start)
-                    block_start = start
-                    break
-
-            if block_regs is None:
-                data[key] = None
-                continue
-
-            offset = address - block_start
-            data[key] = self._extract_ascii(block_regs, offset, reg_count)
 
         return data
 

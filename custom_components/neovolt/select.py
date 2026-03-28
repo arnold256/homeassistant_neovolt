@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     BATTERY_MOS_CONTROL_OPTIONS,
+    BATTERY_RELAY_STATUS_MAP,
     DISPATCH_MODE_MAP,
     DISPATCH_START_MAP,
     DOMAIN,
@@ -29,6 +30,8 @@ class NeoVoltSelectEntityDescription(SelectEntityDescription):
     register_address: int
     coordinator_key: str
     options_map: dict[int, str] = field(default_factory=dict)
+    # read_map includes all possible values for display (superset of options_map)
+    read_map: dict[int, str] = field(default_factory=dict)
 
 
 SELECT_DESCRIPTIONS: tuple[NeoVoltSelectEntityDescription, ...] = (
@@ -39,6 +42,7 @@ SELECT_DESCRIPTIONS: tuple[NeoVoltSelectEntityDescription, ...] = (
         icon="mdi:electric-switch",
         options=list(BATTERY_MOS_CONTROL_OPTIONS.values()),
         options_map=BATTERY_MOS_CONTROL_OPTIONS,
+        read_map=BATTERY_RELAY_STATUS_MAP,  # includes 0=Disconnected for display
         register_address=302,
     ),
     NeoVoltSelectEntityDescription(
@@ -110,8 +114,10 @@ class NeoVoltSelect(CoordinatorEntity[NeoVoltCoordinator], SelectEntity):
             model="Smile Hi10",
             configuration_url=f"http://{entry.data[CONF_HOST]}",
         )
-        # Build reverse map: label → register value
+        # Build reverse map: label → register value (writable options only)
         self._label_to_value = {v: k for k, v in description.options_map.items()}
+        # For reading: use read_map if provided, otherwise fall back to options_map
+        self._display_map = description.read_map or description.options_map
 
     @property
     def current_option(self) -> str | None:
@@ -119,7 +125,7 @@ class NeoVoltSelect(CoordinatorEntity[NeoVoltCoordinator], SelectEntity):
         raw = self.coordinator.data.get(self.entity_description.coordinator_key)
         if raw is None:
             return None
-        return self.entity_description.options_map.get(int(raw))
+        return self._display_map.get(int(raw))
 
     async def async_select_option(self, option: str) -> None:
         """Write the selected option to the Modbus register."""
