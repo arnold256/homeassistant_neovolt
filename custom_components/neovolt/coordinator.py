@@ -74,7 +74,7 @@ REGISTER_DEFS: list[tuple[str, int, str, float]] = [
     ("power_inverter_backup_l2", 1046, "u32", 1),    # 0x0416 W
     ("power_inverter_backup_l3", 1048, "u32", 1),    # 0x0418 W
     ("power_inverter_backup_total", 1050, "u32", 1),  # 0x041A W
-    ("grid_frequency", 1052, "u16", 0.1),            # 0x041C Hz
+    ("grid_frequency", 1052, "u16", 0.01),            # 0x041C Hz
     ("pv1_voltage", 1053, "u16", 0.1),               # 0x041D V
     ("pv1_current", 1054, "u16", 0.1),               # 0x041E A
     ("power_string_1", 1055, "u32", 1),              # 0x041F W
@@ -98,7 +98,7 @@ REGISTER_DEFS: list[tuple[str, int, str, float]] = [
     # ── System Config (block 7: start=2048, count=1) ──
     ("max_feed_to_grid", 2048, "u16", 1),            # 0x0800 %
     # ── UPS SOC (block 8: start=2128, count=1) ──
-    ("battery_ups_soc", 2128, "u16", 0.1),           # 0x0850 %
+    ("battery_ups_soc", 2128, "u16", 1),              # 0x0850 %
     # ── System Fault (block 9: start=2260, count=2) ──
     ("system_fault", 2260, "u32", 1),                # 0x08D4
 ]
@@ -140,6 +140,16 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | None]]):
         self.slave_id = slave_id
         self._client: AsyncModbusTcpClient | None = None
 
+        # pymodbus 3.6-3.8 uses slave=, 3.12+ uses device_id=
+        import inspect
+        sig = inspect.signature(AsyncModbusTcpClient.read_holding_registers)
+        if "device_id" in sig.parameters:
+            self._slave_kwarg = {"device_id": slave_id}
+            self._slave_write_kwarg = {"device_id": slave_id}
+        else:
+            self._slave_kwarg = {"slave": slave_id}
+            self._slave_write_kwarg = {"slave": slave_id}
+
     async def _ensure_connected(self) -> AsyncModbusTcpClient:
         """Ensure we have an active Modbus connection."""
         if self._client is None or not self._client.connected:
@@ -162,9 +172,7 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | None]]):
         """Read a contiguous block of holding registers."""
         try:
             result = await client.read_holding_registers(
-                address=start,
-                count=count,
-                slave=self.slave_id,
+                start, count=count, **self._slave_kwarg,
             )
             if result.isError():
                 _LOGGER.debug(
@@ -253,9 +261,7 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | None]]):
         try:
             client = await self._ensure_connected()
             result = await client.write_register(
-                address=address,
-                value=value,
-                slave=self.slave_id,
+                address, value=value, **self._slave_write_kwarg,
             )
             if result.isError():
                 _LOGGER.error("Error writing register %s: %s", address, result)

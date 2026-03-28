@@ -41,7 +41,7 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         mode=NumberMode.SLIDER,
         register_address=2128,
-        write_scale=10,  # register uses scale 0.1, so 50% → write 500
+        write_scale=1,  # register stores raw percentage, so 50% → write 50
     ),
     NeoVoltNumberEntityDescription(
         key="max_feed_to_grid",

@@ -43,14 +43,22 @@ class NeoVoltConfigFlow(ConfigFlow, domain=DOMAIN):
             self._async_abort_entries_match({CONF_HOST: host})
 
             # Test connection
-            client = AsyncModbusTcpClient(host=host, port=port, timeout=5)
+            client = AsyncModbusTcpClient(host, port=port, timeout=5)
             try:
+                import inspect
+                sig = inspect.signature(client.read_holding_registers)
+                id_kwarg = (
+                    {"device_id": slave_id}
+                    if "device_id" in sig.parameters
+                    else {"slave": slave_id}
+                )
+
                 await client.connect()
                 if not client.connected:
                     errors["base"] = "cannot_connect"
                 else:
                     result = await client.read_holding_registers(
-                        address=258, count=1, slave=slave_id
+                        258, count=1, **id_kwarg
                     )
                     if result.isError():
                         errors["base"] = "cannot_connect"
