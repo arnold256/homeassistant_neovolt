@@ -63,14 +63,14 @@ class NeoVoltDispatchStartButton(CoordinatorEntity[NeoVoltCoordinator], ButtonEn
         active_power = int(data.get("dispatch_active_power", 0))
         reactive_power = int(data.get("dispatch_reactive_power", 0))
         mode = int(data.get("dispatch_mode", 2))
-        soc_raw = int(data.get("dispatch_soc", 0) / 0.4) if data.get("dispatch_soc") else 0
+        soc_pct = float(data.get("dispatch_soc", 0) or 0)
         duration = int(data.get("dispatch_time", 3600))
 
         await self.coordinator.async_dispatch_start(
             active_power_w=active_power,
             duration_s=duration,
             mode=mode,
-            soc_limit=soc_raw,
+            soc_pct=soc_pct,
             reactive_power_var=reactive_power,
         )
 

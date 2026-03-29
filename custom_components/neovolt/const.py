@@ -51,6 +51,15 @@ DISPATCH_MODE_MAP: dict[int, str] = {
 }
 
 TIME_PERIOD_CONTROL_MAP: dict[int, str] = {
-    0: "Disabled",
-    1: "Enabled",
+    0: "Disable",
+    1: "Enable Charge Time Period Control",
+    2: "Enable Discharge Time Period Control",
+    3: "Enable Time Period Control",
 }
+
+# SOC conversion for dispatch registers (0-255 range)
+SOC_CONVERSION_FACTOR = 2.55
+
+# Dispatch reset values (11 registers written to 0x0880)
+MODBUS_OFFSET = 32000
+DISPATCH_RESET_VALUES = [0, 0, MODBUS_OFFSET, 0, MODBUS_OFFSET, 0, 0, 0, 90, 255, 0]

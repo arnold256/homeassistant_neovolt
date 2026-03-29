@@ -37,7 +37,7 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
     # ── Existing controls ──
     NeoVoltNumberEntityDescription(
         key="target_soc",
-        coordinator_key="battery_ups_soc",
+        coordinator_key="discharging_cutoff_soc",
         translation_key="target_soc",
         icon="mdi:battery-charging",
         native_min_value=4,
@@ -65,19 +65,16 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
     ),
     # ── Charge Cut SOC ──
     NeoVoltNumberEntityDescription(
-        key="charge_cut_soc",
-        coordinator_key="charge_cut_soc",
+        key="charging_cutoff_soc",
+        coordinator_key="charging_cutoff_soc",
         translation_key="charge_cut_soc",
         icon="mdi:battery-lock",
-        native_min_value=0,
+        native_min_value=10,
         native_max_value=100,
         native_step=1,
         native_unit_of_measurement=PERCENTAGE,
         mode=NumberMode.SLIDER,
         register_address=2133,
-        write_scale=10,  # register scale 0.1 → 50% writes 500
-        read_scale=0.1,
-        read_dtype="u16",
     ),
     # ── Discharge time slots ──
     NeoVoltNumberEntityDescription(
@@ -216,8 +213,8 @@ NUMBER_DESCRIPTIONS: tuple[NeoVoltNumberEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         mode=NumberMode.SLIDER,
         register_address=2182,
-        write_scale=2.5,  # register scale 0.4 → 50% writes 125
-        read_scale=0.4,
+        write_scale=2.55,  # register uses 0-255, factor 2.55
+        read_scale=1,  # coordinator post-processes to %
         read_dtype="u16",
     ),
     NeoVoltNumberEntityDescription(

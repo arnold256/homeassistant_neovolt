@@ -36,9 +36,9 @@ _LOGGER = logging.getLogger(__name__)
 
 # Register definitions: (key, address, dtype, scale)
 # dtype: u16=unsigned 16-bit, s16=signed 16-bit, u32=unsigned 32-bit, s32=signed 32-bit
+# Aligned with pvandenh/NeovoltBattery_ModbusPlugin register map.
 REGISTER_DEFS: list[tuple[str, int, str, float]] = [
-    # ── Grid Meter (block 1: start=1, count=34) ──
-    ("gridmeter_ct_rate", 1, "u16", 1),                          # 0x0001
+    # ── Grid Meter (block: 0x0010, 39 registers) ──
     ("energy_feed_to_grid", 16, "u32", 0.01),                    # 0x0010 kWh
     ("energy_consumption_from_grid", 18, "u32", 0.01),            # 0x0012 kWh
     ("grid_voltage_phase_a", 20, "u16", 1),                       # 0x0014 V
@@ -52,17 +52,20 @@ REGISTER_DEFS: list[tuple[str, int, str, float]] = [
     ("grid_power_phase_b", 29, "s32", 1),                         # 0x001D W
     ("grid_power_phase_c", 31, "s32", 1),                         # 0x001F W
     ("total_power_grid", 33, "s32", 1),                           # 0x0021 W
-    # ── PV Meter (block 2: start=129, count=34) ──
-    ("pvmeter_ct_rate", 129, "u16", 1),                           # 0x0081
+    ("grid_power_factor", 54, "s16", 0.01),                       # 0x0036
+    # ── PV Meter (block: 0x0090, 20 registers) ──
     ("energy_feed_to_grid_pvmeter", 144, "u32", 0.01),            # 0x0090 kWh
     ("energy_consumption_from_grid_pvmeter", 146, "u32", 0.01),   # 0x0092 kWh
+    ("pv_voltage_a", 148, "u16", 1),                              # 0x0094 V
     ("total_power_pvmeter", 161, "s32", 1),                       # 0x00A1 W
-    # ── Battery (block 3: start=256, count=47) ──
+    # ── Battery (block: 0x0100, 40 registers) ──
     ("battery_voltage", 256, "u16", 0.1),                         # 0x0100 V
     ("battery_current", 257, "s16", 0.1),                         # 0x0101 A
     ("battery_soc", 258, "u16", 0.1),                             # 0x0102 %
     ("battery_status", 259, "u16", 1),                            # 0x0103 lookup
     ("battery_relay_status", 260, "u16", 1),                      # 0x0104 lookup
+    ("battery_min_cell_voltage", 263, "u16", 0.001),              # 0x0107 V
+    ("battery_max_cell_voltage", 266, "u16", 0.001),              # 0x010A V
     ("battery_min_cell_temp", 269, "s16", 0.1),                   # 0x010D °C
     ("battery_max_cell_temp", 272, "s16", 0.1),                   # 0x0110 °C
     ("battery_max_charge_current", 273, "u16", 0.1),              # 0x0111 A
@@ -77,7 +80,7 @@ REGISTER_DEFS: list[tuple[str, int, str, float]] = [
     ("battery_max_charge_power", 300, "u16", 1),                  # 0x012C W
     ("battery_max_discharge_power", 301, "u16", 1),               # 0x012D W
     ("battery_mos_control", 302, "u16", 1),                       # 0x012E RW lookup
-    # ── Inverter (block 4: start=1024, count=65) ──
+    # ── Inverter (block: 0x0400, 65 registers) ──
     ("inverter_voltage_l1", 1024, "u16", 0.1),                    # 0x0400 V
     ("inverter_voltage_l2", 1025, "u16", 0.1),                    # 0x0401 V
     ("inverter_voltage_l3", 1026, "u16", 0.1),                    # 0x0402 V
@@ -112,55 +115,66 @@ REGISTER_DEFS: list[tuple[str, int, str, float]] = [
     ("inverter_fault_2", 1084, "u32", 1),                         # 0x043C
     ("energy_from_pv", 1086, "u32", 0.1),                         # 0x043E kWh
     ("inverter_mode", 1088, "u16", 1),                            # 0x0440 lookup
-    # ── Extended Faults (block 5: start=1099, count=4) ──
+    # ── Extended Faults (block: 0x044B, 4 registers) ──
     ("inverter_extended_fault_1", 1099, "u32", 1),                # 0x044B
     ("inverter_extended_fault_2", 1101, "u32", 1),                # 0x044D
-    # ── EMS Version (block 6: start=1867, count=3) ──
+    # ── EMS Version (block: 0x074B, 3 registers) ──
     ("ems_version_high", 1867, "u16", 1),                         # 0x074B
     ("ems_version_middle", 1868, "u16", 1),                       # 0x074C
     ("ems_version_low", 1869, "u16", 1),                          # 0x074D
-    # ── System Config (block 7: start=2048, count=1) ──
+    # ── Settings (block: 0x0800, 86 registers) ──
     ("max_feed_to_grid", 2048, "u16", 1),                         # 0x0800 %
-    # ── Timing (block 8: start=2127, count=11) ──
+    ("pv_capacity", 2049, "u32", 1),                              # 0x0801 W (writable)
     ("time_period_control_flag", 2127, "u16", 1),                 # 0x084F lookup
-    ("battery_ups_soc", 2128, "u16", 1),                          # 0x0850 %
+    ("discharging_cutoff_soc", 2128, "u16", 1),                   # 0x0850 %
     ("discharge_start_time_1", 2129, "u16", 1),                   # 0x0851 hr
     ("discharge_stop_time_1", 2130, "u16", 1),                    # 0x0852 hr
     ("discharge_start_time_2", 2131, "u16", 1),                   # 0x0853 hr
     ("discharge_stop_time_2", 2132, "u16", 1),                    # 0x0854 hr
-    ("charge_cut_soc", 2133, "u16", 0.1),                         # 0x0855 %
+    ("charging_cutoff_soc", 2133, "u16", 1),                      # 0x0855 % (raw, no scale)
     ("charge_start_time_1", 2134, "u16", 1),                      # 0x0856 hr
     ("charge_stop_time_1", 2135, "u16", 1),                       # 0x0857 hr
     ("charge_start_time_2", 2136, "u16", 1),                      # 0x0858 hr
     ("charge_stop_time_2", 2137, "u16", 1),                       # 0x0859 hr
-    # ── Dispatch (block 9: start=2176, count=9) ──
-    # NOTE: Active/Reactive power use OFFSET 32000, NOT signed encoding.
-    # Raw 32000 = 0W, <32000 = charge, >32000 = discharge.
-    # We store the offset-adjusted value (charge=negative, discharge=positive).
-    ("dispatch_start", 2176, "u16", 1),                           # 0x0880 lookup
+    ("discharge_start_time_1_min", 2138, "u16", 1),               # 0x085A min
+    ("discharge_stop_time_1_min", 2139, "u16", 1),                # 0x085B min
+    ("discharge_start_time_2_min", 2140, "u16", 1),               # 0x085C min
+    ("discharge_stop_time_2_min", 2141, "u16", 1),                # 0x085D min
+    ("charge_start_time_1_min", 2142, "u16", 1),                  # 0x085E min
+    ("charge_stop_time_1_min", 2143, "u16", 1),                   # 0x085F min
+    ("charge_start_time_2_min", 2144, "u16", 1),                  # 0x0860 min
+    ("charge_stop_time_2_min", 2145, "u16", 1),                   # 0x0861 min
+    # ── Dispatch (block: 0x0880, 11 registers) ──
+    # Power uses OFFSET 32000. SOC uses factor 2.55 (0-255 range).
+    # Must be written as single 11-register block, not individual writes.
+    ("dispatch_start", 2176, "u16", 1),                           # 0x0880
     ("dispatch_active_power_raw", 2177, "u32", 1),                # 0x0881 raw (offset 32000)
     ("dispatch_reactive_power_raw", 2179, "u32", 1),              # 0x0883 raw (offset 32000)
-    ("dispatch_mode", 2181, "u16", 1),                            # 0x0885 lookup
-    ("dispatch_soc", 2182, "u16", 0.4),                           # 0x0886 %
-    ("dispatch_time", 2183, "u32", 1),                            # 0x0887 s
-    # ── System Operational (block 10: start=2256, count=6) ──
-    ("pv_inverter_energy", 2256, "u32", 0.1),                     # 0x08D0 kWh
+    ("dispatch_mode", 2181, "u16", 1),                            # 0x0885
+    ("dispatch_soc_raw", 2182, "u16", 1),                         # 0x0886 raw (0-255, factor 2.55)
+    ("dispatch_time", 2183, "u32", 1),                            # 0x0887 seconds
+    ("dispatch_energy_routing", 2185, "u16", 1),                  # 0x0889
+    ("dispatch_pv_switch", 2186, "u16", 1),                       # 0x088A
+    # ── System Operational (block: 0x08D0, 6 registers) ──
+    ("pv_inverter_energy", 2256, "u32", 0.01),                    # 0x08D0 kWh (pvandenh: 0.01)
     ("system_total_pv_energy", 2258, "u32", 0.1),                 # 0x08D2 kWh
     ("system_fault", 2260, "u32", 1),                             # 0x08D4
+    # ── Calibration (block: 0x11D3, 3 registers) ──
+    ("grid_power_offset", 4565, "s16", 1),                        # 0x11D5 W (-500 to +500)
 ]
 
 # Bulk-read blocks: (start_address, count)
 READ_BLOCKS: list[tuple[int, int]] = [
-    (1, 34),       # Block 1:  Grid Meter
-    (129, 34),     # Block 2:  PV Meter
-    (256, 47),     # Block 3:  Battery (extended to include register 302)
-    (1024, 65),    # Block 4:  Inverter
-    (1099, 4),     # Block 5:  Extended Faults
-    (1867, 3),     # Block 6:  EMS Version
-    (2048, 1),     # Block 8:  System Config
-    (2127, 11),    # Block 9:  Timing
-    (2176, 9),     # Block 10: Dispatch
-    (2256, 6),     # Block 11: System Operational
+    (16, 39),      # Block 1:  Grid Meter (0x0010, covers to 0x0036)
+    (144, 20),     # Block 2:  PV Meter (0x0090)
+    (256, 47),     # Block 3:  Battery (0x0100, extended to 302)
+    (1024, 65),    # Block 4:  Inverter (0x0400)
+    (1099, 4),     # Block 5:  Extended Faults (0x044B)
+    (1867, 3),     # Block 6:  EMS Version (0x074B)
+    (2048, 98),    # Block 7:  Settings (0x0800, covers 2048-2145)
+    (2176, 11),    # Block 8:  Dispatch (0x0880)
+    (2256, 6),     # Block 9:  System Operational (0x08D0)
+    (4563, 3),     # Block 10: Calibration (0x11D3)
 ]
 
 
@@ -289,19 +303,21 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
             raw = self._extract(block_regs, offset, dtype)
             data[key] = round(raw * scale, 2)
 
-        # Post-process: convert dispatch power from offset-32000 to signed W
-        # Raw 32000 = 0W, <32000 = charge (negative), >32000 = discharge (positive)
+        # Post-process dispatch values
+        # Power: offset-32000 encoding → signed watts
         raw_active = data.get("dispatch_active_power_raw")
-        if raw_active is not None:
-            data["dispatch_active_power"] = int(raw_active) - 32000
-        else:
-            data["dispatch_active_power"] = None
-
+        data["dispatch_active_power"] = (
+            int(raw_active) - 32000 if raw_active is not None else None
+        )
         raw_reactive = data.get("dispatch_reactive_power_raw")
-        if raw_reactive is not None:
-            data["dispatch_reactive_power"] = int(raw_reactive) - 32000
-        else:
-            data["dispatch_reactive_power"] = None
+        data["dispatch_reactive_power"] = (
+            int(raw_reactive) - 32000 if raw_reactive is not None else None
+        )
+        # SOC: factor 2.55 (0-255 register → 0-100%)
+        raw_soc = data.get("dispatch_soc_raw")
+        data["dispatch_soc"] = (
+            round(int(raw_soc) / 2.55, 1) if raw_soc is not None else None
+        )
 
         return data
 
@@ -386,72 +402,57 @@ class NeoVoltCoordinator(DataUpdateCoordinator[dict[str, float | int | str | Non
         active_power_w: int,
         duration_s: int,
         mode: int = 2,
-        soc_limit: int = 0,
+        soc_pct: float = 0,
         reactive_power_var: int = 0,
     ) -> bool:
-        """Start dispatch with the correct register write sequence.
+        """Start dispatch by writing all 11 registers as a single block to 0x0880.
 
-        The inverter requires registers written in a specific order,
-        with Dispatch Mode (0x0885) written LAST.
+        The NeoVolt requires all dispatch parameters written as a single
+        multi-register write to address 0x0880 (11 registers).
 
         Args:
             active_power_w: Watts, negative=charge, positive=discharge.
             duration_s: Duration in seconds.
-            mode: Dispatch mode (0=Normal, 1=Charge, 2=Discharge).
-            soc_limit: Target SOC (raw value = SOC% / 0.4).
+            mode: Dispatch mode (0=Power only, 2=Power+SOC, 19=No battery charge).
+            soc_pct: Target SOC percentage (0-100).
             reactive_power_var: Reactive power in var (usually 0).
         """
-        # Convert signed watts to offset-32000 encoding
+        # Convert to register encoding
         active_raw = 32000 + active_power_w
         reactive_raw = 32000 + reactive_power_var
-
-        # Split 32-bit values into high/low register pairs
-        active_high = (active_raw >> 16) & 0xFFFF
-        active_low = active_raw & 0xFFFF
-        reactive_high = (reactive_raw >> 16) & 0xFFFF
-        reactive_low = reactive_raw & 0xFFFF
-        duration_high = (duration_s >> 16) & 0xFFFF
-        duration_low = duration_s & 0xFFFF
+        soc_raw = max(0, min(255, round(soc_pct * 2.55)))
 
         _LOGGER.info(
-            "Dispatch start: %dW, %ds, mode=%d, soc=%d, reactive=%dvar",
-            active_power_w, duration_s, mode, soc_limit, reactive_power_var,
+            "Dispatch start: %dW, %ds, mode=%d, soc=%.0f%% (raw=%d), reactive=%dvar",
+            active_power_w, duration_s, mode, soc_pct, soc_raw, reactive_power_var,
         )
 
-        # Write sequence — Dispatch Mode MUST be last
-        # 1. Active Power (0x0881)
-        ok = await self.async_write_registers(2177, [active_high, active_low])
-        if not ok:
-            return False
-        # 2. Reactive Power (0x0883)
-        ok = await self.async_write_registers(2179, [reactive_high, reactive_low])
-        if not ok:
-            return False
-        # 3. SOC limit (0x0886)
-        ok = await self.async_write_register(2182, soc_limit)
-        if not ok:
-            return False
-        # 4. Duration (0x0887)
-        ok = await self.async_write_registers(2183, [duration_high, duration_low])
-        if not ok:
-            return False
-        # 5. Dispatch Start = 1 (0x0880)
-        ok = await self.async_write_register(2176, 1)
-        if not ok:
-            return False
-        # 6. Dispatch Mode — MUST BE LAST (0x0885)
-        ok = await self.async_write_register(2181, mode)
-        if not ok:
-            return False
+        # Build 11-register block: [Para1, Para2_hi, Para2_lo, Para3_hi, Para3_lo,
+        #                            Para4, Para5, Para6_hi, Para6_lo, Para7, Para8]
+        values = [
+            1,                              # Para1: dispatch_start = On
+            (active_raw >> 16) & 0xFFFF,    # Para2 high: active power
+            active_raw & 0xFFFF,            # Para2 low
+            (reactive_raw >> 16) & 0xFFFF,  # Para3 high: reactive power
+            reactive_raw & 0xFFFF,          # Para3 low
+            mode,                           # Para4: dispatch mode
+            soc_raw,                        # Para5: SOC target (0-255)
+            (duration_s >> 16) & 0xFFFF,    # Para6 high: duration
+            duration_s & 0xFFFF,            # Para6 low
+            0,                              # Para7: energy routing
+            0,                              # Para8: PV switch (0=Auto)
+        ]
 
-        # Read back all dispatch registers to confirm
-        await self.async_request_refresh()
-        return True
+        ok = await self.async_write_registers(2176, values)
+        if ok:
+            await self.async_request_refresh()
+        return ok
 
     async def async_dispatch_stop(self) -> bool:
-        """Stop dispatch by writing 0 to Dispatch Start (0x0880)."""
+        """Stop dispatch by writing reset values to 0x0880 (11 registers)."""
         _LOGGER.info("Dispatch stop")
-        ok = await self.async_write_register(2176, 0)
+        reset_values = [0, 0, 32000, 0, 32000, 0, 0, 0, 90, 255, 0]
+        ok = await self.async_write_registers(2176, reset_values)
         if ok:
             await self.async_request_refresh()
         return ok

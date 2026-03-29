@@ -340,13 +340,29 @@
         "name": "EMS Version Low",
         "description": "Patch version number of the EMS firmware."
       },
-      "gridmeter_ct_rate": {
-        "name": "Grid Meter CT Rate",
-        "description": "Current transformer ratio configured for the grid meter."
+      "grid_power_factor": {
+        "name": "Grid Power Factor",
+        "description": "Power factor at the grid connection. 1.00 = purely resistive load."
       },
-      "pvmeter_ct_rate": {
-        "name": "PV Meter CT Rate",
-        "description": "Current transformer ratio configured for the PV meter."
+      "battery_min_cell_voltage": {
+        "name": "Battery Min Cell Voltage",
+        "description": "Lowest individual cell voltage in the battery pack. Useful for monitoring cell balance."
+      },
+      "battery_max_cell_voltage": {
+        "name": "Battery Max Cell Voltage",
+        "description": "Highest individual cell voltage in the battery pack. Large gap between min/max indicates imbalance."
+      },
+      "pv_voltage_a": {
+        "name": "PV Meter Voltage Phase A",
+        "description": "AC voltage measured at the PV meter on phase A."
+      },
+      "pv_capacity": {
+        "name": "PV Capacity",
+        "description": "Configured PV system capacity in watts."
+      },
+      "grid_power_offset": {
+        "name": "Grid Power Offset",
+        "description": "Calibration offset for grid power reading (-500 to +500W). Adjusts the measurement if your CT clamp reads slightly off."
       },
       "dispatch_active_power_sensor": {
         "name": "Dispatch Active Power",

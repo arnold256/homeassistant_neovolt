@@ -605,8 +605,8 @@ SENSOR_DESCRIPTIONS: tuple[NeoVoltSensorEntityDescription, ...] = (
         value_map=BATTERY_RELAY_STATUS_MAP,
     ),
     NeoVoltSensorEntityDescription(
-        key="battery_ups_soc",
-        coordinator_key="battery_ups_soc",
+        key="discharging_cutoff_soc",
+        coordinator_key="discharging_cutoff_soc",
         translation_key="battery_ups_soc",
         native_unit_of_measurement=PERCENTAGE,
         device_class=SensorDeviceClass.BATTERY,
@@ -692,19 +692,63 @@ SENSOR_DESCRIPTIONS: tuple[NeoVoltSensorEntityDescription, ...] = (
         icon="mdi:numeric",
         entity_registry_enabled_default=False,
     ),
-    # ── CT Rates ──
+    # ── Grid Power Factor ──
     NeoVoltSensorEntityDescription(
-        key="gridmeter_ct_rate",
-        coordinator_key="gridmeter_ct_rate",
-        translation_key="gridmeter_ct_rate",
-        icon="mdi:meter-electric-outline",
+        key="grid_power_factor",
+        coordinator_key="grid_power_factor",
+        translation_key="grid_power_factor",
+        icon="mdi:angle-acute",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_registry_enabled_default=False,
+    ),
+    # ── Battery Cell Voltages ──
+    NeoVoltSensorEntityDescription(
+        key="battery_min_cell_voltage",
+        coordinator_key="battery_min_cell_voltage",
+        translation_key="battery_min_cell_voltage",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=3,
         entity_registry_enabled_default=False,
     ),
     NeoVoltSensorEntityDescription(
-        key="pvmeter_ct_rate",
-        coordinator_key="pvmeter_ct_rate",
-        translation_key="pvmeter_ct_rate",
-        icon="mdi:meter-electric-outline",
+        key="battery_max_cell_voltage",
+        coordinator_key="battery_max_cell_voltage",
+        translation_key="battery_max_cell_voltage",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=3,
+        entity_registry_enabled_default=False,
+    ),
+    # ── PV Meter Voltage ──
+    NeoVoltSensorEntityDescription(
+        key="pv_voltage_a",
+        coordinator_key="pv_voltage_a",
+        translation_key="pv_voltage_a",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_registry_enabled_default=False,
+    ),
+    # ── PV Capacity ──
+    NeoVoltSensorEntityDescription(
+        key="pv_capacity",
+        coordinator_key="pv_capacity",
+        translation_key="pv_capacity",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        icon="mdi:solar-panel-large",
+        entity_registry_enabled_default=False,
+    ),
+    # ── Calibration ──
+    NeoVoltSensorEntityDescription(
+        key="grid_power_offset",
+        coordinator_key="grid_power_offset",
+        translation_key="grid_power_offset",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        icon="mdi:tune-vertical",
         entity_registry_enabled_default=False,
     ),
     # ── Dispatch read-back ──
